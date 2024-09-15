@@ -33,12 +33,7 @@ const MobileNav = ({ user }: MobileNavProps) => {
         </SheetTrigger>
         <SheetContent side="left" className="border-none bg-white">
           <Link href="/" className="  cursor-pointer items-center gap-1 px-4">
-            <Image
-              src="../public/icons/logo.svg"
-              alt="logo"
-              width={34}
-              height={34}
-            />
+            <Image src="/icons/logo.svg" alt="logo" width={34} height={34} />
             <h1 className=" text-26 font-ibm-plex-serif font-bold text-black-1">
               DJE Bank
             </h1>
