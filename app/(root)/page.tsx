@@ -1,11 +1,17 @@
 import HeaderBox from "@/components/HeaderBox";
 import RightSideBar from "@/components/RightSideBar";
+// import { getAccounts } from "@/lib/actions/bank.actions";
 import { getLoggedInUser } from "@/lib/actions/user.actions";
 // import TotalBalanceBox from "@/components/TotalBalanceBox";
 import React from "react";
 
 const Home = async () => {
   const loggedIn = await getLoggedInUser();
+
+  // const accounts = await getAccounts({ userId: loggedIn.$id });
+
+  // if (!accounts) return;
+
   return (
     <section className="home">
       <div className="home-content">

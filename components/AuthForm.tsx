@@ -28,7 +28,7 @@ import PlaidLink from "./PlaidLink";
 const AuthForm = ({ type }: { type: string }) => {
   const router = useRouter();
 
-  const [user, setuser] = useState(null);
+  const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const formSchema = authFormSchema(type);
@@ -57,15 +57,15 @@ const AuthForm = ({ type }: { type: string }) => {
         state: data.state!,
         postalCode: data.postalCode!,
         dateOfBirth: data.dateOfBirth!,
-        bvn: data.bvn!,
+        ssn: data.ssn!,
         email: data.email,
         password: data.password,
       };
 
       if (type === "sign-up") {
         const newUser = await signUp(userData);
-        setuser(newUser);
         console.log(newUser);
+        setUser(newUser);
       }
 
       if (type === "sign-in") {
@@ -163,7 +163,7 @@ const AuthForm = ({ type }: { type: string }) => {
                     />
                     <CustomInput
                       control={form.control}
-                      name="bvn"
+                      name="ssn"
                       label="BVN"
                       placeholder="e.g 1234"
                     />

@@ -14,15 +14,19 @@ import {
 
 const PlaidLink = ({ user, variant }: PlaidLinkProps) => {
   const router = useRouter();
+
   const [token, setToken] = useState("");
+
   useEffect(() => {
     const getLinkToken = async () => {
       const data = await createLinkToken(user);
+
       setToken(data?.linkToken);
     };
 
     getLinkToken();
   }, [user]);
+
   const onSuccess = useCallback<PlaidLinkOnSuccess>(
     async (public_token: string) => {
       await exchangePublicToken({
@@ -32,7 +36,7 @@ const PlaidLink = ({ user, variant }: PlaidLinkProps) => {
 
       router.push("/");
     },
-    [user]
+    [user, router]
   );
 
   const config: PlaidLinkOptions = {
@@ -41,6 +45,7 @@ const PlaidLink = ({ user, variant }: PlaidLinkProps) => {
   };
 
   const { open, ready } = usePlaidLink(config);
+
   return (
     <>
       {variant === "primary" ? (
@@ -49,14 +54,15 @@ const PlaidLink = ({ user, variant }: PlaidLinkProps) => {
           disabled={!ready}
           className="plaidlink-primary"
         >
-          Connect Bank
+          Connect bank
         </Button>
       ) : variant === "ghost" ? (
-        <Button>Connect Bank</Button>
+        <Button>Connect bank</Button>
       ) : (
-        <Button>Connect Bank</Button>
+        <Button>Connect bank</Button>
       )}
     </>
   );
 };
+
 export default PlaidLink;

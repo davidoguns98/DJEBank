@@ -1,8 +1,8 @@
 "use server";
 
-import { cookies } from "next/headers";
-import { createAdminClient, createSessionClient } from "../appwrite";
 import { ID } from "node-appwrite";
+import { createAdminClient, createSessionClient } from "../appwrite";
+import { cookies } from "next/headers";
 import { encryptId, extractCustomerIdFromUrl, parseStringify } from "../utils";
 import {
   CountryCode,
@@ -10,7 +10,8 @@ import {
   ProcessorTokenCreateRequestProcessorEnum,
   Products,
 } from "plaid";
-import { plaidClient } from "../plaid";
+
+import { plaidClient } from "@/lib/plaid";
 import { revalidatePath } from "next/cache";
 import { addFundingSource, createDwollaCustomer } from "./dwolla.actions";
 
@@ -32,8 +33,8 @@ export const signIn = async ({ email, password }: signInProps) => {
   }
 };
 
-export const signUp = async (userData: SignUpParams) => {
-  const { email, password, firstName, lastName } = userData;
+export const signUp = async ({ password, ...userData }: SignUpParams) => {
+  const { email, firstName, lastName } = userData;
 
   let newUserAccount;
 
@@ -58,7 +59,7 @@ export const signUp = async (userData: SignUpParams) => {
 
     const dwollaCustomerId = extractCustomerIdFromUrl(dwollaCustomerUrl);
 
-    const newUser = database.createDocument(
+    const newUser = await database.createDocument(
       DATABASE_ID!,
       USER_COLLECTION_ID!,
       ID.unique(),
@@ -84,13 +85,16 @@ export const signUp = async (userData: SignUpParams) => {
     console.error("Error", error);
   }
 };
+
 export async function getLoggedInUser() {
   try {
     const { account } = await createSessionClient();
 
     const user = await account.get();
+
     return parseStringify(user);
   } catch (error) {
+    console.log(error);
     return null;
   }
 }
@@ -98,10 +102,13 @@ export async function getLoggedInUser() {
 export const logoutAccount = async () => {
   try {
     const { account } = await createSessionClient();
+
     cookies().delete("appwrite-session");
 
     await account.deleteSession("current");
-  } catch (error) {}
+  } catch (error) {
+    return null;
+  }
 };
 
 export const createLinkToken = async (user: User) => {
@@ -137,7 +144,6 @@ export const createBankAccount = async ({
 
     const bankAccount = await database.createDocument(
       DATABASE_ID!,
-      USER_COLLECTION_ID!,
       BANK_COLLECTION_ID!,
       ID.unique(),
       {
@@ -151,9 +157,7 @@ export const createBankAccount = async ({
     );
 
     return parseStringify(bankAccount);
-  } catch (error) {
-    console.log(error);
-  }
+  } catch (error) {}
 };
 
 export const exchangePublicToken = async ({
@@ -161,6 +165,7 @@ export const exchangePublicToken = async ({
   user,
 }: exchangePublicTokenProps) => {
   try {
+    // Exchange public token for access token and item ID
     const response = await plaidClient.itemPublicTokenExchange({
       public_token: publicToken,
     });
@@ -168,37 +173,36 @@ export const exchangePublicToken = async ({
     const accessToken = response.data.access_token;
     const itemId = response.data.item_id;
 
-    // Getting account Info
-
-    const accountResponse = await plaidClient.accountsGet({
+    // Get account information from Plaid using the access token
+    const accountsResponse = await plaidClient.accountsGet({
       access_token: accessToken,
     });
 
-    const accountData = accountResponse.data.accounts[0];
+    const accountData = accountsResponse.data.accounts[0];
 
-    // processor for Dwolla using the access and account ID
-
+    // Create a processor token for Dwolla using the access token and account ID
     const request: ProcessorTokenCreateRequest = {
       access_token: accessToken,
       account_id: accountData.account_id,
       processor: "dwolla" as ProcessorTokenCreateRequestProcessorEnum,
     };
+
     const processorTokenResponse = await plaidClient.processorTokenCreate(
       request
     );
     const processorToken = processorTokenResponse.data.processor_token;
 
-    //  creating a funding source
-
+    // Create a funding source URL for the account using the Dwolla customer ID, processor token, and bank name
     const fundingSourceUrl = await addFundingSource({
       dwollaCustomerId: user.dwollaCustomerId,
       processorToken,
       bankName: accountData.name,
     });
-    // if the funding source URl is not created , throw an error
+
+    // If the funding source URL is not created, throw an error
     if (!fundingSourceUrl) throw Error;
 
-    // Create a bank account using the details recieved
+    // Create a bank account using the user ID, item ID, account ID, access token, funding source URL, and sharable ID
     await createBankAccount({
       userId: user.$id,
       bankId: itemId,
@@ -208,14 +212,14 @@ export const exchangePublicToken = async ({
       shareableId: encryptId(accountData.account_id),
     });
 
-    // Revalidate the path to reflect changes
+    // Revalidate the path to reflect the changes
     revalidatePath("/");
 
-    // return a success message
+    // Return a success message
     return parseStringify({
       publicTokenExchange: "complete",
     });
   } catch (error) {
-    console.error("An error occured while creating exchanging token:", error);
+    console.error("An error occurred while creating exchanging token:", error);
   }
 };
