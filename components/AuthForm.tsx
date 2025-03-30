@@ -139,13 +139,13 @@ const AuthForm = ({ type }: { type: string }) => {
                       control={form.control}
                       name="state"
                       label="State"
-                      placeholder="e.g Lagos"
+                      placeholder="e.g LA, CA, NY"
                     />
                     <CustomInput
                       control={form.control}
                       name="postalCode"
                       label="Postal Code"
-                      placeholder="e.g 102102"
+                      placeholder="e.g 10210"
                     />
                   </div>
                   <CustomInput
