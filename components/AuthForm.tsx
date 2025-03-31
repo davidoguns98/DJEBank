@@ -160,6 +160,7 @@ const AuthForm = ({ type }: { type: string }) => {
                       control={form.control}
                       name="postalCode"
                       label="Postal Code"
+                      maxLength={5}
                       placeholder="e.g 10210"
                     />
                   </div>
@@ -180,7 +181,7 @@ const AuthForm = ({ type }: { type: string }) => {
                       control={form.control}
                       name="ssn"
                       label="BVN"
-                      maxLenght={4}
+                      maxLength={4}
                       placeholder="e.g 1234"
                     />
                   </div>
