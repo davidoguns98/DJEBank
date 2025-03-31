@@ -135,12 +135,27 @@ const AuthForm = ({ type }: { type: string }) => {
                     placeholder="Enter your specific address"
                   />
                   <div className="flex gap-4">
-                    <CustomInput
+                    {/* <CustomInput
                       control={form.control}
                       name="state"
                       label="State"
                       placeholder="e.g LA, CA, NY"
+                    /> */}
+
+                    <CustomInput
+                      control={form.control}
+                      name="state"
+                      label="state"
+                      type="select"
+                      placeholder="select your state"
+                      options={[
+                        { value: "CA", label: "California" },
+                        { value: "NY", label: "New York" },
+                        { value: "TX", label: "Texas" },
+                        { value: "FL", label: "Florida" },
+                      ]}
                     />
+
                     <CustomInput
                       control={form.control}
                       name="postalCode"
@@ -165,6 +180,7 @@ const AuthForm = ({ type }: { type: string }) => {
                       control={form.control}
                       name="ssn"
                       label="BVN"
+                      maxLenght={4}
                       placeholder="e.g 1234"
                     />
                   </div>
